@@ -14,6 +14,24 @@ export interface ParsedContent {
   sections: ParsedSection[];
 }
 
+async function extractPdfText(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch('/api/extract-pdf', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'PDF extraction failed' }));
+    throw new Error(err.error || 'PDF extraction failed');
+  }
+
+  const { text } = await res.json();
+  return text;
+}
+
 export async function uploadAndProcessFile(
   file: File,
   userId: string
@@ -48,16 +66,17 @@ export async function uploadAndProcessFile(
 
   const contentId = contentRows[0].id;
 
-  // 3. Use InsForge AI to parse and analyze the document
+  // 3. Extract text and use AI to parse and analyze the document
   try {
-    let parsed: ParsedContent;
+    let text: string;
 
     if (file.type === 'application/pdf') {
-      parsed = await parseWithAI(uploadData.url, file.name);
+      text = await extractPdfText(file);
     } else {
-      const text = await file.text();
-      parsed = await parseTextWithAI(text);
+      text = await file.text();
     }
+
+    const parsed = await parseTextWithAI(text);
 
     // 4. Create content sections
     const sections = parsed.sections.map((s, i) => ({
@@ -97,47 +116,6 @@ export async function uploadAndProcessFile(
       .eq('id', contentId);
     throw err;
   }
-}
-
-async function parseWithAI(fileUrl: string, filename: string): Promise<ParsedContent> {
-  const response = await insforge.ai.chat.completions.create({
-    model: 'openai/gpt-4o-mini',
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'file',
-            file: { filename, file_data: fileUrl },
-          },
-          {
-            type: 'text',
-            text: `Analyze this document and return a JSON object with this exact structure:
-{
-  "title": "the document title",
-  "summary": "a 2-3 sentence summary",
-  "tags": ["tag1", "tag2", "tag3"],
-  "difficulty": 50,
-  "sections": [
-    { "heading": "Section Title or null", "body": "full section text", "wordCount": 123 }
-  ]
-}
-
-Rules:
-- Split the document into logical sections (by headings, or ~500 word chunks if no headings)
-- Tags should be 3-8 relevant topic keywords
-- Difficulty is 1-100 (1=very easy, 100=extremely advanced)
-- Preserve all original content in the section bodies
-- Return ONLY valid JSON, no markdown formatting`,
-          },
-        ],
-      },
-    ],
-    fileParser: { enabled: true },
-  });
-
-  const text = response.choices[0]?.message?.content || '';
-  return parseAIResponse(text);
 }
 
 async function parseTextWithAI(text: string): Promise<ParsedContent> {

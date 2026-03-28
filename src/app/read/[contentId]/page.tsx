@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Map, Loader2 } from 'lucide-react';
+import { QuizDialog } from '@/components/quiz/quiz-dialog';
+import { ArrowLeft, Map, ClipboardCheck, Loader2 } from 'lucide-react';
 
 export default function ReadPage() {
   const params = useParams();
@@ -25,6 +26,7 @@ export default function ReadPage() {
   const [loading, setLoading] = useState(true);
   const [adaptationLevel, setAdaptationLevel] = useState<number>(3);
   const [activeSection, setActiveSection] = useState<number>(0);
+  const [quizOpen, setQuizOpen] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -173,6 +175,12 @@ export default function ReadPage() {
                 <Map className="mr-1 h-4 w-4" /> Mind Map
               </Button>
             </Link>
+
+            {sections.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setQuizOpen(true)}>
+                <ClipboardCheck className="mr-1 h-4 w-4" /> Quiz
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -229,6 +237,16 @@ export default function ReadPage() {
           </div>
         )}
       </article>
+
+      {/* Quiz Dialog */}
+      {sections.length > 0 && (
+        <QuizDialog
+          contentId={contentId}
+          contentTitle={content.title}
+          open={quizOpen}
+          onOpenChange={setQuizOpen}
+        />
+      )}
     </div>
   );
 }

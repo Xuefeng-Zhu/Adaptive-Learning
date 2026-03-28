@@ -140,3 +140,32 @@ export interface ChatMessage {
   metadata: { content_generated?: boolean; content_id?: string } | null;
   created_at: string;
 }
+
+export interface QuizQuestion {
+  question: string;
+  options: [string, string, string, string];
+  correctIndex: number;
+  explanation: string;
+  sectionId: string | null;
+}
+
+export interface Quiz {
+  id: string;
+  content_id: string;
+  user_id: string;
+  questions: QuizQuestion[];
+  question_count: number;
+  model_used: string | null;
+  created_at: string;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quiz_id: string;
+  user_id: string;
+  answers: number[];
+  score: number;
+  total: number;
+  time_spent_seconds: number;
+  completed_at: string;
+}
