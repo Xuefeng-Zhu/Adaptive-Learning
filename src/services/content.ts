@@ -1,12 +1,12 @@
 import { insforge } from '@/lib/insforge';
 
-interface ParsedSection {
+export interface ParsedSection {
   heading: string | null;
   body: string;
   wordCount: number;
 }
 
-interface ParsedContent {
+export interface ParsedContent {
   title: string;
   summary: string;
   tags: string[];
@@ -177,7 +177,7 @@ ${truncated}
   return parseAIResponse(responseText);
 }
 
-function parseAIResponse(text: string): ParsedContent {
+export function parseAIResponse(text: string): ParsedContent {
   // Try to extract JSON from the response
   let jsonStr = text.trim();
 

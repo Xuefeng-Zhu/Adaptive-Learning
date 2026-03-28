@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge';
+import type { InsForgeClient } from '@insforge/sdk';
 import { knowledgeLevelToAdaptation, educationToDefaultLevel } from '@/lib/constants';
 
 const LEVEL_INSTRUCTIONS: Record<number, string> = {
@@ -74,6 +74,7 @@ ${sectionBody}
 }
 
 export async function getAdaptationLevel(
+  client: InsForgeClient,
   userId: string,
   topicId: string | null,
   educationLevel: string | null,
@@ -82,7 +83,7 @@ export async function getAdaptationLevel(
   if (override && override >= 1 && override <= 5) return override;
 
   if (topicId) {
-    const { data } = await insforge.database
+    const { data } = await client.database
       .from('knowledge_profiles')
       .select('level')
       .eq('user_id', userId)
@@ -96,12 +97,13 @@ export async function getAdaptationLevel(
 }
 
 export async function getCachedAdaptation(
+  client: InsForgeClient,
   contentId: string,
   sectionId: string,
   userId: string,
   adaptationLevel: number
 ): Promise<string | null> {
-  const { data } = await insforge.database
+  const { data } = await client.database
     .from('adapted_content')
     .select('adapted_text')
     .eq('content_id', contentId)
@@ -114,6 +116,7 @@ export async function getCachedAdaptation(
 }
 
 export async function cacheAdaptation(
+  client: InsForgeClient,
   contentId: string,
   sectionId: string,
   userId: string,
@@ -121,7 +124,7 @@ export async function cacheAdaptation(
   adaptedText: string,
   modelUsed: string
 ): Promise<void> {
-  await insforge.database.from('adapted_content').insert({
+  await client.database.from('adapted_content').insert({
     content_id: contentId,
     section_id: sectionId,
     user_id: userId,

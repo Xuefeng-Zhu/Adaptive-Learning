@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { insforge } from '@/lib/insforge';
+import { createServerInsforge } from '@/lib/insforge-server';
 import {
   buildAdaptationPrompt,
   getAdaptationLevel,
@@ -9,8 +9,11 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    // Create per-request client with the user's auth token
+    const serverInsforge = createServerInsforge(request);
+
     // Verify auth
-    const { data: authData } = await insforge.auth.getCurrentUser();
+    const { data: authData } = await serverInsforge.auth.getCurrentUser();
     if (!authData?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -25,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the section
-    const { data: section } = await insforge.database
+    const { data: section } = await serverInsforge.database
       .from('content_sections')
       .select('*')
       .eq('id', sectionId)
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch content for topic info
-    const { data: content } = await insforge.database
+    const { data: content } = await serverInsforge.database
       .from('content')
       .select('topic_id')
       .eq('id', contentId)
@@ -44,6 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Determine adaptation level
     const adaptationLevel = await getAdaptationLevel(
+      serverInsforge,
       userId,
       content?.topic_id || null,
       profile?.education_level || null,
@@ -51,7 +55,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Check cache
-    const cached = await getCachedAdaptation(contentId, sectionId, userId, adaptationLevel);
+    const cached = await getCachedAdaptation(serverInsforge, contentId, sectionId, userId, adaptationLevel);
     if (cached) {
       // Return cached as a simple response
       return NextResponse.json({ text: cached, cached: true, adaptationLevel });
@@ -67,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     const modelId = 'openai/gpt-4o-mini';
 
-    const stream = await insforge.ai.chat.completions.create({
+    const stream = await serverInsforge.ai.chat.completions.create({
       model: modelId,
       messages: [
         { role: 'system', content: system },
@@ -94,6 +98,7 @@ export async function POST(request: NextRequest) {
           // Cache the complete adaptation
           try {
             await cacheAdaptation(
+              serverInsforge,
               contentId,
               sectionId,
               userId,

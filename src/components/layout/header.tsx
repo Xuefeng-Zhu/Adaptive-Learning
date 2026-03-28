@@ -15,13 +15,14 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Menu, LogOut, User, BookOpen, LayoutDashboard, Library, Upload, BarChart3 } from 'lucide-react';
+import { Menu, LogOut, User, BookOpen, LayoutDashboard, Library, Upload, BarChart3, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/chat', label: 'Chat', icon: MessageSquare },
   { href: '/dashboard/library', label: 'Library', icon: Library },
   { href: '/dashboard/upload', label: 'Upload', icon: Upload },
   { href: '/dashboard/progress', label: 'Progress', icon: BarChart3 },

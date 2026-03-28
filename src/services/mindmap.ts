@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge';
+import type { InsForgeClient } from '@insforge/sdk';
 import type { MindMapNode, MindMapEdge } from '@/types';
 
 interface ExtractedGraph {
@@ -7,6 +7,7 @@ interface ExtractedGraph {
 }
 
 export async function extractConceptMap(
+  client: InsForgeClient,
   sections: Array<{ heading: string | null; body: string; section_order: number }>
 ): Promise<ExtractedGraph> {
   // Build a condensed version of the content for the AI
@@ -18,7 +19,7 @@ export async function extractConceptMap(
     })
     .join('\n\n');
 
-  const response = await insforge.ai.chat.completions.create({
+  const response = await client.ai.chat.completions.create({
     model: 'openai/gpt-4o-mini',
     messages: [
       {

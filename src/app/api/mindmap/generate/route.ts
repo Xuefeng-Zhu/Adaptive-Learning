@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { insforge } from '@/lib/insforge';
+import { createServerInsforge } from '@/lib/insforge-server';
 import { extractConceptMap, computeTreeLayout } from '@/services/mindmap';
 
 export async function POST(request: NextRequest) {
   try {
-    const { data: authData } = await insforge.auth.getCurrentUser();
+    const serverInsforge = createServerInsforge(request);
+
+    const { data: authData } = await serverInsforge.auth.getCurrentUser();
     if (!authData?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -16,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for existing mind map
-    const { data: existing } = await insforge.database
+    const { data: existing } = await serverInsforge.database
       .from('mind_maps')
       .select('*')
       .eq('content_id', contentId)
@@ -29,8 +31,8 @@ export async function POST(request: NextRequest) {
 
     // Fetch content and sections
     const [contentRes, sectionsRes] = await Promise.all([
-      insforge.database.from('content').select('title').eq('id', contentId).single(),
-      insforge.database
+      serverInsforge.database.from('content').select('title').eq('id', contentId).single(),
+      serverInsforge.database
         .from('content_sections')
         .select('*')
         .eq('content_id', contentId)
@@ -43,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Extract concepts using AI
     const { nodes: rawNodes, edges: rawEdges } = await extractConceptMap(
+      serverInsforge,
       sectionsRes.data as Array<{ heading: string | null; body: string; section_order: number }>
     );
 
@@ -71,7 +74,7 @@ export async function POST(request: NextRequest) {
     }));
 
     // Save to database
-    const { data: saved, error: saveError } = await insforge.database
+    const { data: saved, error: saveError } = await serverInsforge.database
       .from('mind_maps')
       .insert({
         content_id: contentId,

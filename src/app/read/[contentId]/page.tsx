@@ -17,7 +17,7 @@ import { ArrowLeft, Map, Loader2 } from 'lucide-react';
 export default function ReadPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const contentId = params.contentId as string;
 
   const [content, setContent] = useState<Content | null>(null);
@@ -26,68 +26,79 @@ export default function ReadPage() {
   const [adaptationLevel, setAdaptationLevel] = useState<number>(3);
   const [activeSection, setActiveSection] = useState<number>(0);
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [authLoading, user, router]);
+
   useEffect(() => {
     if (!contentId || !user) return;
     async function load() {
-      const [contentRes, sectionsRes] = await Promise.all([
-        insforge.database
-          .from('content')
-          .select('*')
-          .eq('id', contentId)
-          .single(),
-        insforge.database
-          .from('content_sections')
-          .select('*')
-          .eq('content_id', contentId)
-          .order('section_order', { ascending: true }),
-      ]);
+      try {
+        const [contentRes, sectionsRes] = await Promise.all([
+          insforge.database
+            .from('content')
+            .select('*')
+            .eq('id', contentId)
+            .single(),
+          insforge.database
+            .from('content_sections')
+            .select('*')
+            .eq('content_id', contentId)
+            .order('section_order', { ascending: true }),
+        ]);
 
-      if (contentRes.data) setContent(contentRes.data as Content);
-      if (sectionsRes.data) setSections(sectionsRes.data as ContentSection[]);
+        if (contentRes.data) setContent(contentRes.data as Content);
+        if (sectionsRes.data) setSections(sectionsRes.data as ContentSection[]);
 
-      // Determine user's adaptation level for this content's topic
-      if (contentRes.data?.topic_id) {
-        const { data: profile } = await insforge.database
-          .from('knowledge_profiles')
-          .select('level')
+        // Determine user's adaptation level for this content's topic
+        if (contentRes.data?.topic_id) {
+          const { data: profile } = await insforge.database
+            .from('knowledge_profiles')
+            .select('level')
+            .eq('user_id', user!.id)
+            .eq('topic_id', contentRes.data.topic_id)
+            .maybeSingle();
+
+          if (profile) {
+            const lvl = profile.level;
+            if (lvl <= 20) setAdaptationLevel(1);
+            else if (lvl <= 40) setAdaptationLevel(2);
+            else if (lvl <= 60) setAdaptationLevel(3);
+            else if (lvl <= 80) setAdaptationLevel(4);
+            else setAdaptationLevel(5);
+          }
+        }
+
+        // Upsert reading progress
+        const { data: existing } = await insforge.database
+          .from('reading_progress')
+          .select('id')
           .eq('user_id', user!.id)
-          .eq('topic_id', contentRes.data.topic_id)
+          .eq('content_id', contentId)
           .maybeSingle();
 
-        if (profile) {
-          const lvl = profile.level;
-          if (lvl <= 20) setAdaptationLevel(1);
-          else if (lvl <= 40) setAdaptationLevel(2);
-          else if (lvl <= 60) setAdaptationLevel(3);
-          else if (lvl <= 80) setAdaptationLevel(4);
-          else setAdaptationLevel(5);
+        if (!existing) {
+          await insforge.database.from('reading_progress').insert({
+            user_id: user!.id,
+            content_id: contentId,
+            percent_complete: 0,
+            time_spent_seconds: 0,
+            current_section_order: 0,
+          });
+        } else {
+          await insforge.database
+            .from('reading_progress')
+            .update({ last_read_at: new Date().toISOString() })
+            .eq('id', existing.id);
         }
+      } catch (err) {
+        console.error('Failed to load content:', err);
+      } finally {
+        setLoading(false);
       }
-
-      // Upsert reading progress
-      const { data: existing } = await insforge.database
-        .from('reading_progress')
-        .select('id')
-        .eq('user_id', user!.id)
-        .eq('content_id', contentId)
-        .maybeSingle();
-
-      if (!existing) {
-        await insforge.database.from('reading_progress').insert({
-          user_id: user!.id,
-          content_id: contentId,
-          percent_complete: 0,
-          time_spent_seconds: 0,
-          current_section_order: 0,
-        });
-      } else {
-        await insforge.database
-          .from('reading_progress')
-          .update({ last_read_at: new Date().toISOString() })
-          .eq('id', existing.id);
-      }
-
-      setLoading(false);
     }
     load();
   }, [contentId, user]);
@@ -113,7 +124,7 @@ export default function ReadPage() {
 
   const currentLevelInfo = ADAPTATION_LEVELS.find((l) => l.value === adaptationLevel);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen p-6">
         <Skeleton className="mx-auto h-8 w-64" />
@@ -122,6 +133,8 @@ export default function ReadPage() {
       </div>
     );
   }
+
+  if (!user) return null;
 
   if (!content) {
     return (

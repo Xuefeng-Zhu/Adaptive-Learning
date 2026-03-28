@@ -9,10 +9,12 @@ import {
   Upload,
   BarChart3,
   BookOpen,
+  MessageSquare,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/chat', label: 'Chat', icon: MessageSquare },
   { href: '/dashboard/library', label: 'Library', icon: Library },
   { href: '/dashboard/upload', label: 'Upload', icon: Upload },
   { href: '/dashboard/progress', label: 'Progress', icon: BarChart3 },

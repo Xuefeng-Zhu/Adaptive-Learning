@@ -3,20 +3,20 @@
 import { useState, useCallback, useRef } from 'react';
 import { getAccessToken } from '@/lib/insforge';
 
-interface UseAdaptationStreamReturn {
-  text: string;
+interface UseChatStreamReturn {
+  streamingText: string;
   isStreaming: boolean;
   error: string | null;
-  adaptationLevel: number | null;
-  startStream: (contentId: string, sectionId: string, level?: number) => Promise<void>;
+  conversationId: string | null;
+  startStream: (conversationId: string | null, message: string) => Promise<void>;
   cancel: () => void;
 }
 
-export function useAdaptationStream(): UseAdaptationStreamReturn {
-  const [text, setText] = useState('');
+export function useChatStream(): UseChatStreamReturn {
+  const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [adaptationLevel, setAdaptationLevel] = useState<number | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const cancel = useCallback(() => {
@@ -26,13 +26,12 @@ export function useAdaptationStream(): UseAdaptationStreamReturn {
   }, []);
 
   const startStream = useCallback(
-    async (contentId: string, sectionId: string, level?: number) => {
-      // Cancel any existing stream
+    async (existingConversationId: string | null, message: string) => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
 
-      setText('');
+      setStreamingText('');
       setError(null);
       setIsStreaming(true);
 
@@ -45,13 +44,12 @@ export function useAdaptationStream(): UseAdaptationStreamReturn {
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch('/api/adapt', {
+        const response = await fetch('/api/chat', {
           method: 'POST',
           headers,
           body: JSON.stringify({
-            contentId,
-            sectionId,
-            adaptationLevel: level,
+            conversationId: existingConversationId,
+            message,
           }),
           signal: controller.signal,
         });
@@ -61,31 +59,40 @@ export function useAdaptationStream(): UseAdaptationStreamReturn {
           throw new Error(errData.error || `HTTP ${response.status}`);
         }
 
-        const levelHeader = response.headers.get('X-Adaptation-Level');
-        if (levelHeader) setAdaptationLevel(Number(levelHeader));
-
-        // Check if it's a JSON cached response
-        const contentType = response.headers.get('Content-Type') || '';
-        if (contentType.includes('application/json')) {
-          const data = await response.json();
-          setText(data.text);
-          if (data.adaptationLevel) setAdaptationLevel(data.adaptationLevel);
-          setIsStreaming(false);
-          return;
-        }
-
-        // Stream response
         const reader = response.body?.getReader();
         if (!reader) throw new Error('No response body');
 
         const decoder = new TextDecoder();
         let accumulated = '';
+        let headerParsed = false;
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+
           accumulated += decoder.decode(value, { stream: true });
-          setText(accumulated);
+
+          if (!headerParsed) {
+            const newlineIdx = accumulated.indexOf('\n');
+            if (newlineIdx !== -1) {
+              // Parse the JSON header line
+              const headerLine = accumulated.slice(0, newlineIdx);
+              try {
+                const header = JSON.parse(headerLine);
+                if (header.conversationId) {
+                  setConversationId(header.conversationId);
+                }
+              } catch {
+                // If header parsing fails, treat everything as content
+              }
+              headerParsed = true;
+              // The rest after the newline is content
+              const content = accumulated.slice(newlineIdx + 1);
+              setStreamingText(content);
+            }
+          } else {
+            setStreamingText(accumulated.slice(accumulated.indexOf('\n') + 1));
+          }
         }
 
         setIsStreaming(false);
@@ -98,5 +105,5 @@ export function useAdaptationStream(): UseAdaptationStreamReturn {
     []
   );
 
-  return { text, isStreaming, error, adaptationLevel, startStream, cancel };
+  return { streamingText, isStreaming, error, conversationId, startStream, cancel };
 }

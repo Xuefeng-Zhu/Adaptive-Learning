@@ -10,7 +10,7 @@ export interface Topic {
 export interface Content {
   id: string;
   title: string;
-  source_type: 'upload_pdf' | 'upload_text' | 'url_import' | 'curated';
+  source_type: 'upload_pdf' | 'upload_text' | 'url_import' | 'curated' | 'chat_generated';
   source_url: string | null;
   original_text: string;
   summary: string | null;
@@ -120,4 +120,23 @@ export interface UserProfile {
   interests?: string;
   onboarding_complete?: boolean;
   preferred_adaptation_level?: number;
+}
+
+export interface ChatConversation {
+  id: string;
+  user_id: string;
+  title: string | null;
+  generated_content_id: string | null;
+  status: 'active' | 'archived';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  conversation_id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  metadata: { content_generated?: boolean; content_id?: string } | null;
+  created_at: string;
 }

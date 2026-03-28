@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { getAccessToken } from '@/lib/insforge';
 import { MindMapCanvas } from '@/components/mindmap/mindmap-canvas';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,7 +33,7 @@ interface MapEdge {
 export default function MindMapPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const contentId = params.contentId as string;
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -42,12 +43,30 @@ export default function MindMapPage() {
   const [generating, setGenerating] = useState(false);
   const [title, setTitle] = useState('Mind Map');
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [authLoading, user, router]);
+
+  function getAuthHeaders(): Record<string, string> {
+    const token = getAccessToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
+
   async function loadOrGenerate() {
     setLoading(true);
     try {
       const response = await fetch('/api/mindmap/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ contentId }),
       });
 
@@ -79,7 +98,7 @@ export default function MindMapPage() {
       // Delete existing map
       await fetch('/api/mindmap/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ contentId, regenerate: true }),
       });
       // The API returns existing, so let's delete first
@@ -144,7 +163,7 @@ export default function MindMapPage() {
     router.push(`/read/${contentId}?section=${sectionOrder}`);
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

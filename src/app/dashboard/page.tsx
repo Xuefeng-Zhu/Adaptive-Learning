@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, Upload, Library, Clock } from 'lucide-react';
+import { BookOpen, Upload, Library, Clock, MessageSquare } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -114,7 +114,12 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
+        <Link href="/dashboard/chat">
+          <Button variant="outline">
+            <MessageSquare className="mr-2 h-4 w-4" /> Start chat
+          </Button>
+        </Link>
         <Link href="/dashboard/upload">
           <Button>
             <Upload className="mr-2 h-4 w-4" /> Upload content
