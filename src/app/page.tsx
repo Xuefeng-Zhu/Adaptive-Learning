@@ -1,74 +1,95 @@
-export default function Home() {
+import Link from 'next/link';
+import { BookOpen, Brain, Sparkles, Map } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+export default function HomePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <main className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <div className="mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6">
-            <svg
-              className="w-12 h-12 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* Nav */}
+      <nav className="border-b bg-white/80 backdrop-blur dark:bg-slate-950/80">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <BookOpen className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-bold">AdaptLearn</span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome to adaptive-learning
+          <div className="flex items-center gap-3">
+            <Link href="/login">
+              <Button variant="ghost" size="sm">Sign in</Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Get started</Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="mx-auto max-w-6xl px-4 py-24 text-center">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            Reading that adapts to{' '}
+            <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
+              your level
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-            Get started by editing{' '}
-            <code className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">src/app/page.tsx</code>
+          <p className="mt-6 text-lg text-muted-foreground sm:text-xl">
+            Upload any document and our AI rewrites it to match your knowledge level in real-time.
+            Generate mind maps, track your progress, and learn more effectively.
           </p>
+          <div className="mt-8 flex items-center justify-center gap-4">
+            <Link href="/register">
+              <Button size="lg" className="text-base">
+                Start learning free
+              </Button>
+            </Link>
+          </div>
         </div>
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <a
-            href="https://nextjs.org/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Documentation →
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Learn about Next.js features and API.
+      {/* Features */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="rounded-xl border bg-card p-6">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950">
+              <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold">AI-Adapted Content</h3>
+            <p className="text-sm text-muted-foreground">
+              Content is rewritten in real-time to match your background. From beginner-friendly
+              explanations to expert-level depth.
             </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Learn →</h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Learn Next.js in an interactive course!
+          </div>
+          <div className="rounded-xl border bg-card p-6">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-950">
+              <Map className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold">Auto Mind Maps</h3>
+            <p className="text-sm text-muted-foreground">
+              AI extracts key concepts and relationships from your readings and generates
+              interactive, explorable mind maps.
             </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Templates →
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Explore starter templates for Next.js.
+          </div>
+          <div className="rounded-xl border bg-card p-6">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950">
+              <Brain className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold">Knowledge Tracking</h3>
+            <p className="text-sm text-muted-foreground">
+              Your knowledge profile evolves as you read. The platform learns your level and adapts
+              content automatically over time.
             </p>
-          </a>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-8">
+        <div className="mx-auto max-w-6xl px-4 text-center text-sm text-muted-foreground">
+          AdaptLearn — Adaptive Learning Platform
+        </div>
+      </footer>
     </div>
   );
 }
