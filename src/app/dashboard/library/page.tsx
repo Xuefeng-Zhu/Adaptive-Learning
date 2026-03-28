@@ -24,13 +24,10 @@ export default function LibraryPage() {
         .from('content')
         .select('*')
         .eq('status', 'ready')
+        .or(`uploader_id.eq.${user!.id},is_public.eq.true`)
         .order('created_at', { ascending: false });
       if (data) {
-        // Filter to user's own content or public content
-        const filtered = (data as Content[]).filter(
-          (c) => c.uploader_id === user!.id || c.is_public
-        );
-        setContent(filtered);
+        setContent(data as Content[]);
       }
       setLoading(false);
     }

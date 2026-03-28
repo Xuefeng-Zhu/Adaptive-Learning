@@ -55,6 +55,7 @@ export async function uploadAndProcessFile(
       uploader_id: userId,
       file_url: uploadData.url,
       file_key: uploadData.key,
+      is_public: false,
       status: 'processing',
       word_count: 0,
     })
@@ -202,6 +203,7 @@ export async function processUrlImport(url: string, userId: string): Promise<str
       source_url: url,
       original_text: '',
       uploader_id: userId,
+      is_public: false,
       status: 'processing',
       word_count: 0,
     })
