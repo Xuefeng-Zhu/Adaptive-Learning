@@ -45,19 +45,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       const u = data.user;
+      const p = (u.profile ?? {}) as Record<string, unknown>;
       setUser({
         id: u.id,
         email: u.email,
         profile: {
           id: u.id,
-          name: u.profile?.name,
-          avatar_url: u.profile?.avatar_url,
+          name: p.name as string | undefined,
+          avatar_url: p.avatar_url as string | undefined,
           email: u.email,
-          education_level: u.profile?.education_level,
-          profession: u.profile?.profession,
-          interests: u.profile?.interests,
-          onboarding_complete: u.profile?.onboarding_complete,
-          preferred_adaptation_level: u.profile?.preferred_adaptation_level,
+          education_level: p.education_level as string | undefined,
+          profession: p.profession as string | undefined,
+          interests: p.interests as string | undefined,
+          onboarding_complete: p.onboarding_complete as boolean | undefined,
+          preferred_adaptation_level: p.preferred_adaptation_level as number | undefined,
         },
       });
     } catch {

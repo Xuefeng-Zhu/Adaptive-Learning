@@ -147,7 +147,7 @@ export default function ReadPage() {
               </span>
               <Slider
                 value={[adaptationLevel]}
-                onValueChange={([v]) => setAdaptationLevel(v)}
+                onValueChange={(v) => setAdaptationLevel(Array.isArray(v) ? v[0] : v)}
                 min={1}
                 max={5}
                 step={1}
@@ -189,7 +189,7 @@ export default function ReadPage() {
           <span className="text-xs text-muted-foreground">Level: {currentLevelInfo?.label}</span>
           <Slider
             value={[adaptationLevel]}
-            onValueChange={([v]) => setAdaptationLevel(v)}
+            onValueChange={(v) => setAdaptationLevel(Array.isArray(v) ? v[0] : v)}
             min={1}
             max={5}
             step={1}

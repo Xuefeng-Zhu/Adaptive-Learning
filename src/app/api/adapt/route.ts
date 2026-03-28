@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = authData.user.id;
-    const profile = authData.user.profile;
+    const profile = authData.user.profile as Record<string, string> | null;
 
     const body = await request.json();
     const { contentId, sectionId, adaptationLevel: levelOverride } = body;

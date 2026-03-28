@@ -33,7 +33,7 @@ export function Header() {
   const initials = user?.profile?.name
     ? user.profile.name
         .split(' ')
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .join('')
         .toUpperCase()
     : 'U';
@@ -42,10 +42,8 @@ export function Header() {
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
       {/* Mobile nav */}
       <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-5 w-5" />
-          </Button>
+        <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden" />}>
+          <Menu className="h-5 w-5" />
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
           <div className="flex h-16 items-center gap-2 border-b px-6">
@@ -84,22 +82,18 @@ export function Header() {
 
       <div className="flex items-center gap-3">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 px-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.profile?.avatar_url} />
-                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-              </Avatar>
-              <span className="hidden text-sm font-medium sm:inline-block">
-                {user?.profile?.name || 'User'}
-              </span>
-            </Button>
+          <DropdownMenuTrigger render={<Button variant="ghost" className="flex items-center gap-2 px-2" />}>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user?.profile?.avatar_url} />
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+            <span className="hidden text-sm font-medium sm:inline-block">
+              {user?.profile?.name || 'User'}
+            </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem asChild>
-              <Link href="/onboarding" className="flex items-center gap-2">
-                <User className="h-4 w-4" /> Edit Profile
-              </Link>
+            <DropdownMenuItem render={<Link href="/onboarding" />} className="flex items-center gap-2">
+              <User className="h-4 w-4" /> Edit Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">

@@ -35,11 +35,21 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     async function loadTopics() {
-      const { data } = await insforge.database
-        .from('topics')
-        .select('*')
-        .order('name', { ascending: true });
-      if (data) setTopics(data as Topic[]);
+      try {
+        const { data, error } = await insforge.database
+          .from('topics')
+          .select('*')
+          .order('name', { ascending: true });
+        if (error) {
+          console.error('Failed to load topics:', error);
+          toast.error('Failed to load topics');
+          return;
+        }
+        if (data) setTopics(data as Topic[]);
+      } catch (err) {
+        console.error('Error loading topics:', err);
+        toast.error('Failed to load topics');
+      }
     }
     loadTopics();
   }, []);
@@ -117,7 +127,7 @@ export default function OnboardingPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="education">Education Level</Label>
-                <Select value={educationLevel} onValueChange={setEducationLevel}>
+                <Select value={educationLevel} onValueChange={(val) => { if (val !== null) setEducationLevel(val); }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your education level" />
                   </SelectTrigger>
