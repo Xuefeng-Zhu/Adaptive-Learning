@@ -1,4 +1,6 @@
 export const EDUCATION_LEVELS = [
+  { value: 'elementary_school', label: 'Elementary School' },
+  { value: 'middle_school', label: 'Middle School' },
   { value: 'high_school', label: 'High School' },
   { value: 'undergraduate', label: 'Undergraduate' },
   { value: 'graduate', label: 'Graduate' },
@@ -26,6 +28,8 @@ export function knowledgeLevelToAdaptation(level: number): number {
 
 export function educationToDefaultLevel(education: string | null): number {
   switch (education) {
+    case 'elementary_school': return 1;
+    case 'middle_school': return 1;
     case 'high_school': return 1;
     case 'undergraduate': return 2;
     case 'graduate': return 3;
