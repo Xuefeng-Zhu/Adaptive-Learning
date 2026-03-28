@@ -69,6 +69,7 @@ export default function ChatPage() {
         .select('*')
         .eq('user_id', user!.id)
         .eq('status', 'active')
+        .is('context_content_id', null)
         .order('updated_at', { ascending: false });
       setConversations((data || []) as ChatConversation[]);
     } catch {

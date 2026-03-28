@@ -127,6 +127,7 @@ export interface ChatConversation {
   user_id: string;
   title: string | null;
   generated_content_id: string | null;
+  context_content_id: string | null;
   status: 'active' | 'archived';
   created_at: string;
   updated_at: string;

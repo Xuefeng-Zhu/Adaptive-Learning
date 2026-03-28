@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AdaptLearn - Demo Slides</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --brand: #6C3AED;
+      --brand-light: #8B5CF6;
+      --dark: #111827;
+      --gray: #6B7280;
+      --light-bg: #F8F7FF;
+    }
+
+    .reveal {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--dark);
+    }
+
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 700;
+      color: var(--dark);
+      text-transform: none;
+      letter-spacing: -0.02em;
+    }
+
+    .reveal h1 { font-size: 2.4em; }
+    .reveal h2 { font-size: 1.6em; margin-bottom: 0.3em; }
+    .reveal h3 { font-size: 1.1em; color: var(--gray); font-weight: 400; }
+
+    .reveal p {
+      font-size: 0.65em;
+      line-height: 1.5;
+      color: var(--gray);
+    }
+
+    .reveal .slide-number {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    /* Force all slides to fit */
+    .reveal .slides section {
+      height: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    /* Title slide */
+    .title-slide h1 {
+      font-size: 2.8em;
+      margin-bottom: 0.05em;
+    }
+
+    .title-slide .brand-text {
+      color: var(--brand);
+    }
+
+    .title-slide .tagline {
+      font-size: 1em;
+      color: var(--gray);
+      font-weight: 400;
+      margin-top: 0.1em;
+    }
+
+    .title-slide .demo-link {
+      display: inline-block;
+      margin-top: 1em;
+      padding: 0.5em 1.6em;
+      background: var(--brand);
+      color: white !important;
+      border-radius: 50px;
+      font-size: 0.6em;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+
+    .title-slide .demo-link:hover {
+      transform: scale(1.05);
+    }
+
+    /* Problem slide */
+    .problem-card {
+      background: #FEF2F2;
+      border-left: 4px solid #EF4444;
+      padding: 0.5em 1em;
+      border-radius: 0 10px 10px 0;
+      margin: 0.35em auto;
+      max-width: 750px;
+      text-align: left;
+    }
+
+    .problem-card p {
+      color: #991B1B;
+      font-size: 0.62em;
+      margin: 0;
+    }
+
+    /* Solution slide */
+    .solution-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7em;
+      margin-top: 0.5em;
+    }
+
+    .solution-card {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 0.6em 0.8em;
+      text-align: left;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .solution-card .icon {
+      font-size: 1.2em;
+      margin-bottom: 0.1em;
+    }
+
+    .solution-card h4 {
+      font-size: 0.6em;
+      font-weight: 600;
+      color: var(--dark);
+      margin: 0.15em 0;
+    }
+
+    .solution-card p {
+      font-size: 0.45em;
+      color: var(--gray);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* Level cards */
+    .levels-row {
+      display: flex;
+      gap: 0.5em;
+      justify-content: center;
+      margin-top: 0.6em;
+    }
+
+    .level-card {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 0.4em 0.6em;
+      min-width: 130px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .level-card .level-name {
+      font-size: 0.48em;
+      font-weight: 600;
+      color: var(--brand);
+      margin-bottom: 0.1em;
+    }
+
+    .level-card .level-desc {
+      font-size: 0.36em;
+      color: var(--gray);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    /* Screenshot styling */
+    .screenshot-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 0.4em;
+    }
+
+    .screenshot-container img {
+      max-height: 340px;
+      border-radius: 10px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      border: 1px solid #E5E7EB;
+    }
+
+    /* Tech stack */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.7em;
+      margin-top: 0.6em;
+    }
+
+    .tech-item {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 0.6em;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .tech-item .tech-label {
+      font-size: 0.42em;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.15em;
+    }
+
+    .tech-item .tech-name {
+      font-size: 0.58em;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    /* CTA slide */
+    .cta-slide h2 {
+      font-size: 2em;
+    }
+
+    .cta-slide .url {
+      display: inline-block;
+      margin-top: 0.6em;
+      padding: 0.5em 1.8em;
+      background: var(--brand);
+      color: white !important;
+      border-radius: 50px;
+      font-size: 0.7em;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .cta-slide .built-with {
+      margin-top: 1em;
+      font-size: 0.5em;
+      color: var(--gray);
+    }
+
+    /* Flow diagram */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3em;
+      margin-top: 0.6em;
+    }
+
+    .flow-step {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 0.4em 0.6em;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .flow-step .step-num {
+      font-size: 0.45em;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .flow-step .step-text {
+      font-size: 0.42em;
+      color: var(--dark);
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .flow-arrow {
+      font-size: 1em;
+      color: var(--brand-light);
+    }
+
+    /* Progress bar override */
+    .reveal .progress {
+      color: var(--brand);
+    }
+
+    .reveal .controls button {
+      color: var(--brand);
+    }
+
+    section {
+      padding: 0.6em !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: Title -->
+      <section class="title-slide">
+        <h1><span class="brand-text">AdaptLearn</span></h1>
+        <p class="tagline">Reading that adapts to your level</p>
+        <p style="font-size: 0.55em; color: var(--gray); margin-top: 0.3em;">
+          An AI-powered adaptive reading platform that adjusts content difficulty<br>
+          to match each user's knowledge level in real time.
+        </p>
+        <a class="demo-link" href="https://9xby7ut5.insforge.site/" target="_blank">Try the Live Demo</a>
+      </section>
+
+      <!-- Slide 2: The Problem -->
+      <section>
+        <h2>The Problem</h2>
+        <p style="max-width: 700px; margin: 0 auto 0.3em;">
+          Educational content is one-size-fits-all. The same textbook is handed to beginners and experts alike.
+        </p>
+        <div class="problem-card">
+          <p>Beginners get overwhelmed by jargon and drop out.</p>
+        </div>
+        <div class="problem-card">
+          <p>Advanced learners waste time on material that's too basic.</p>
+        </div>
+        <div class="problem-card">
+          <p>Learners spend more time searching for the right resource than actually learning.</p>
+        </div>
+      </section>
+
+      <!-- Slide 3: The Solution -->
+      <section>
+        <h2>Our Solution</h2>
+        <p style="max-width: 700px; margin: 0 auto;">
+          Upload any document. We rewrite it in real time to match your knowledge level.
+        </p>
+        <div class="solution-grid">
+          <div class="solution-card">
+            <div class="icon">&#x1F4D6;</div>
+            <h4>AI-Adapted Reading</h4>
+            <p>Content is dynamically rewritten across 5 difficulty levels as you read - from simple analogies to expert-level depth.</p>
+          </div>
+          <div class="solution-card">
+            <div class="icon">&#x1F9E0;</div>
+            <h4>Auto Mind Maps</h4>
+            <p>AI extracts key concepts and relationships from any document into interactive, navigable visualizations.</p>
+          </div>
+          <div class="solution-card">
+            <div class="icon">&#x1F4DD;</div>
+            <h4>Smart Quizzes</h4>
+            <p>Auto-generated quizzes validate comprehension and reinforce learning after each reading session.</p>
+          </div>
+          <div class="solution-card">
+            <div class="icon">&#x1F4C8;</div>
+            <h4>Knowledge Tracking</h4>
+            <p>Your knowledge profile evolves as you learn, keeping difficulty always in the optimal zone.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: How It Works -->
+      <section>
+        <h2>How It Works</h2>
+        <div class="flow-row">
+          <div class="flow-step">
+            <div class="step-num">1</div>
+            <div class="step-text">Upload document<br><span style="font-size:0.8em;color:var(--gray)">PDF, article, URL</span></div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">2</div>
+            <div class="step-text">AI parses content<br><span style="font-size:0.8em;color:var(--gray)">Auto-structured</span></div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">3</div>
+            <div class="step-text">Adapts to you<br><span style="font-size:0.8em;color:var(--gray)">Real-time rewrite</span></div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">4</div>
+            <div class="step-text">Learn &amp; grow<br><span style="font-size:0.8em;color:var(--gray)">Quiz, map, track</span></div>
+          </div>
+        </div>
+        <div class="levels-row" style="margin-top: 0.8em;">
+          <div class="level-card" style="border-left: 3px solid #22C55E;">
+            <div class="level-name">Beginner</div>
+            <div class="level-desc">Simple language,<br>real-world analogies</div>
+          </div>
+          <div class="level-card" style="border-left: 3px solid #3B82F6;">
+            <div class="level-name">Intermediate</div>
+            <div class="level-desc">Standard terms,<br>moderate detail</div>
+          </div>
+          <div class="level-card" style="border-left: 3px solid #6C3AED;">
+            <div class="level-name">Advanced</div>
+            <div class="level-desc">Technical depth,<br>no hand-holding</div>
+          </div>
+          <div class="level-card" style="border-left: 3px solid #EC4899;">
+            <div class="level-name">Expert</div>
+            <div class="level-desc">Precise language,<br>full complexity</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 5: App Screenshots -->
+      <section>
+        <h2>The App</h2>
+        <div class="screenshot-container" style="gap: 1.2em;">
+          <div style="text-align:center;">
+            <img src="screenshot-landing.png" alt="Landing Page" style="max-height: 320px;" />
+            <p style="font-size: 0.45em; margin-top: 0.3em;">Landing Page</p>
+          </div>
+          <div style="text-align:center;">
+            <img src="screenshot-auth.png" alt="Sign In" style="max-height: 320px;" />
+            <p style="font-size: 0.45em; margin-top: 0.3em;">Authentication</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 6: Tech Stack -->
+      <section>
+        <h2>Tech Stack</h2>
+        <div class="tech-grid">
+          <div class="tech-item">
+            <div class="tech-label">Frontend</div>
+            <div class="tech-name">Next.js 15</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-label">UI</div>
+            <div class="tech-name">Tailwind + shadcn/ui</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-label">AI</div>
+            <div class="tech-name">OpenAI GPT-4o-mini</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-label">Backend</div>
+            <div class="tech-name">InsForge</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-label">Visualization</div>
+            <div class="tech-name">React Flow</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-label">Dev Tool</div>
+            <div class="tech-name">Qoder</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 7: CTA -->
+      <section class="cta-slide">
+        <h2>Learning should adapt to <span style="color: var(--brand);">you</span>.</h2>
+        <p style="font-size: 0.7em; color: var(--gray);">Not the other way around.</p>
+        <a class="url" href="https://9xby7ut5.insforge.site/" target="_blank">9xby7ut5.insforge.site</a>
+        <div class="built-with">
+          Built with InsForge &middot; Developed with Qoder &middot; For B.E.L.L.E.
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      progress: true,
+      controls: true,
+      center: true,
+      transition: 'slide',
+      width: 1280,
+      height: 720,
+      margin: 0.04,
+    });
+  </script>
+</body>
+</html>

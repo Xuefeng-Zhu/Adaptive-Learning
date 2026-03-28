@@ -8,7 +8,7 @@ interface UseChatStreamReturn {
   isStreaming: boolean;
   error: string | null;
   conversationId: string | null;
-  startStream: (conversationId: string | null, message: string) => Promise<void>;
+  startStream: (conversationId: string | null, message: string, options?: { contentId?: string }) => Promise<void>;
   cancel: () => void;
 }
 
@@ -26,7 +26,7 @@ export function useChatStream(): UseChatStreamReturn {
   }, []);
 
   const startStream = useCallback(
-    async (existingConversationId: string | null, message: string) => {
+    async (existingConversationId: string | null, message: string, options?: { contentId?: string }) => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -50,6 +50,7 @@ export function useChatStream(): UseChatStreamReturn {
           body: JSON.stringify({
             conversationId: existingConversationId,
             message,
+            ...(options?.contentId ? { contentId: options.contentId } : {}),
           }),
           signal: controller.signal,
         });

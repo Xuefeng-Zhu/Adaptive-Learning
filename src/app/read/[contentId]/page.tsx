@@ -13,6 +13,8 @@ import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { QuizDialog } from '@/components/quiz/quiz-dialog';
+import { ReadingChatFab } from '@/components/reader/reading-chat-fab';
+import { ReadingChatPanel } from '@/components/reader/reading-chat-panel';
 import { ArrowLeft, Map, ClipboardCheck, Loader2 } from 'lucide-react';
 
 export default function ReadPage() {
@@ -27,6 +29,7 @@ export default function ReadPage() {
   const [adaptationLevel, setAdaptationLevel] = useState<number>(3);
   const [activeSection, setActiveSection] = useState<number>(0);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -245,6 +248,17 @@ export default function ReadPage() {
           contentTitle={content.title}
           open={quizOpen}
           onOpenChange={setQuizOpen}
+        />
+      )}
+
+      {/* Reading Chat */}
+      <ReadingChatFab open={chatOpen} onToggle={() => setChatOpen((o) => !o)} />
+      {chatOpen && (
+        <ReadingChatPanel
+          contentId={contentId}
+          contentTitle={content.title}
+          userId={user.id}
+          onClose={() => setChatOpen(false)}
         />
       )}
     </div>

@@ -1,13 +1,22 @@
 import type { InsForgeClient } from '@insforge/sdk';
 import type { ChatConversation, ChatMessage, UserProfile } from '@/types';
 
-export async function createConversation(client: InsForgeClient, userId: string): Promise<string> {
+export async function createConversation(
+  client: InsForgeClient,
+  userId: string,
+  contextContentId?: string
+): Promise<string> {
+  const row: Record<string, unknown> = {
+    user_id: userId,
+    status: 'active',
+  };
+  if (contextContentId) {
+    row.context_content_id = contextContentId;
+  }
+
   const { data, error } = await client.database
     .from('chat_conversations')
-    .insert({
-      user_id: userId,
-      status: 'active',
-    })
+    .insert(row)
     .select('id');
 
   if (error || !data?.[0]) {
@@ -15,6 +24,23 @@ export async function createConversation(client: InsForgeClient, userId: string)
   }
 
   return data[0].id;
+}
+
+export async function findContentConversation(
+  client: InsForgeClient,
+  userId: string,
+  contentId: string
+): Promise<string | null> {
+  const { data, error } = await client.database
+    .from('chat_conversations')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('context_content_id', contentId)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data?.id || null;
 }
 
 export async function listConversations(client: InsForgeClient, userId: string): Promise<ChatConversation[]> {
@@ -125,4 +151,54 @@ Guidelines:
 - Keep responses concise (2-4 paragraphs max) unless the user asks for detail
 - Use Markdown for formatting (headings, bold, lists) when appropriate
 - Stay focused on educational topics and learning goals`;
+}
+
+export function buildContentChatSystemPrompt(
+  profile: UserProfile,
+  contentTitle: string,
+  contentSummary: string | null,
+  sectionTexts: string[]
+): string {
+  // Truncate section content to ~15,000 chars to leave room for conversation history
+  let articleText = '';
+  const maxChars = 15000;
+  for (const text of sectionTexts) {
+    if (articleText.length + text.length > maxChars) {
+      const remaining = maxChars - articleText.length;
+      if (remaining > 200) {
+        articleText += text.slice(0, remaining) + '...(truncated)';
+      }
+      break;
+    }
+    articleText += text + '\n\n';
+  }
+
+  return `You are AdaptLearn's Reading Companion - an expert AI tutor helping a user understand an article they are currently reading.
+
+Article being read:
+- Title: ${contentTitle}
+${contentSummary ? `- Summary: ${contentSummary}` : ''}
+
+Article content:
+---
+${articleText.trim()}
+---
+
+Learner profile:
+- Education level: ${profile.education_level || 'not specified'}
+- Profession: ${profile.profession || 'not specified'}
+- Interests: ${profile.interests || 'not specified'}
+
+Your role:
+1. Answer questions about this specific article
+2. Explain difficult concepts from the article in simpler terms
+3. Provide analogies relevant to the learner's background
+4. Help the learner connect ideas across sections
+
+Guidelines:
+- Stay grounded in the article content - do not invent information not present in the article
+- Keep responses concise (the user is mid-reading, not looking for lectures)
+- Use Markdown for formatting when appropriate
+- Adapt your language complexity to match the learner's education level
+- If asked about something not covered in the article, say so and offer a brief general explanation`;
 }

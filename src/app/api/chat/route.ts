@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerInsforge } from '@/lib/insforge-server';
 import {
   createConversation,
+  findContentConversation,
   addMessage,
   getMessages,
   updateConversationTitle,
   buildChatSystemPrompt,
+  buildContentChatSystemPrompt,
 } from '@/services/chat';
 import type { UserProfile } from '@/types';
 
@@ -22,7 +24,7 @@ export async function POST(request: NextRequest) {
     const profile = (authData.user.profile as unknown as UserProfile) || {};
 
     const body = await request.json();
-    const { conversationId: existingConversationId, message } = body;
+    const { conversationId: existingConversationId, message, contentId } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -30,10 +32,19 @@ export async function POST(request: NextRequest) {
 
     // Create or use existing conversation
     let conversationId = existingConversationId;
-    const isNewConversation = !conversationId;
+    let isNewConversation = !conversationId;
+
+    if (!conversationId && contentId) {
+      // Look for existing conversation tied to this content
+      conversationId = await findContentConversation(serverInsforge, userId, contentId);
+      if (conversationId) {
+        isNewConversation = false;
+      }
+    }
 
     if (!conversationId) {
-      conversationId = await createConversation(serverInsforge, userId);
+      conversationId = await createConversation(serverInsforge, userId, contentId || undefined);
+      isNewConversation = true;
     }
 
     // Insert user message
@@ -43,7 +54,39 @@ export async function POST(request: NextRequest) {
     const messages = await getMessages(serverInsforge, conversationId);
 
     // Build the messages array for AI
-    const systemPrompt = buildChatSystemPrompt(profile);
+    let systemPrompt: string;
+
+    if (contentId) {
+      // Fetch content and sections for context-aware prompt
+      const [contentRes, sectionsRes] = await Promise.all([
+        serverInsforge.database
+          .from('content')
+          .select('title, summary')
+          .eq('id', contentId)
+          .single(),
+        serverInsforge.database
+          .from('content_sections')
+          .select('heading, body')
+          .eq('content_id', contentId)
+          .order('section_order', { ascending: true }),
+      ]);
+
+      const contentData = contentRes.data;
+      const sectionTexts = (sectionsRes.data || []).map(
+        (s: { heading: string | null; body: string }) =>
+          s.heading ? `## ${s.heading}\n${s.body}` : s.body
+      );
+
+      systemPrompt = buildContentChatSystemPrompt(
+        profile,
+        contentData?.title || 'Untitled',
+        contentData?.summary || null,
+        sectionTexts
+      );
+    } else {
+      systemPrompt = buildChatSystemPrompt(profile);
+    }
+
     const aiMessages = [
       { role: 'system' as const, content: systemPrompt },
       ...messages.map((m) => ({
@@ -85,9 +128,20 @@ export async function POST(request: NextRequest) {
 
             // Auto-set title on first exchange
             if (isNewConversation) {
-              const title = message.length > 50
-                ? message.slice(0, 47) + '...'
-                : message;
+              let title: string;
+              if (contentId) {
+                // Use content title for reading chat conversations
+                const { data: c } = await serverInsforge.database
+                  .from('content')
+                  .select('title')
+                  .eq('id', contentId)
+                  .single();
+                title = c?.title ? `Questions about: ${c.title}`.slice(0, 100) : message.slice(0, 50);
+              } else {
+                title = message.length > 50
+                  ? message.slice(0, 47) + '...'
+                  : message;
+              }
               await updateConversationTitle(serverInsforge, conversationId, title);
             }
           } catch {
